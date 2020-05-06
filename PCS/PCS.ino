@@ -179,6 +179,7 @@ void checar() {
         sendRF(6); //função sendRF com o parametro 6 ->configurado com off na tomada
         delay(200);
       }
+    digitalWrite(led_red_pin, HIGH);
     digitalWrite(rele_trava, HIGH);
   }
   if (adulto >= 1) {
@@ -187,6 +188,7 @@ void checar() {
         sendRF(4); //função sendRF com o parametro 6 ->configurado com on na tomada
         delay(200);
       }
+    digitalWrite(led_green_pin, HIGH);
     digitalWrite(rele_trava, LOW);
   }
 }
