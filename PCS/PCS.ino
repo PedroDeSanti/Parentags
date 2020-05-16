@@ -120,6 +120,7 @@ void entrando() {
     if (digitalRead(infraRed3) == LOW) e3 = 1;
     menorDist = min(menorDist, distanciaUltrassonico());
     tf = millis();
+    delay(30);
   }
   if (e3 == 1) {
     if (menorDist > alturaCrianca) adulto++;
@@ -158,6 +159,7 @@ void saindo() {
     if (digitalRead(infraRed1) == LOW) e1 = 1;
     menorDist = min(menorDist, distanciaUltrassonico());
     tf = millis();
+    delay(30);
   }
   if (e1 == 1) {
     if (menorDist > alturaCrianca) adulto--;
