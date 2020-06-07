@@ -1,3 +1,23 @@
+#define BLYNK_PRINT Serial
+
+#include "ESP8266_Lib.h"
+
+#include "BlynkSimpleShieldEsp8266.h"
+
+//BLYNK
+
+char auth[]="authtoken";
+char ssid[]="networkname";
+char pass[]="password";
+
+#include "SoftwareSerial.h"
+
+SoftwareSerial EspSerial(10, 11);
+
+#define ESP8266_BAUD 9600
+
+ESP8266 wifi(&EspSerial);
+
 //definição dos pinos do sistema
 const int trigger_pin = 2;    // trigger  sensor ultrassonico
 const int echo_pin = 3;       // echo     sensor ultrassonico
@@ -9,11 +29,14 @@ const int infraRed1 = 12;     // sensor entrada
 const int infraRed2 = 7;      // sensor no alto
 const int infraRed3 = 8;      // sensor saida
 const int rele_trava = 13;    // rele que controla a trava
+const int tomada = 7;         // pino com o qual o blynk indica se devemos ligar ou desligar a tomada
 
 //configuração tomada radio frequencia
 byte address_l = 200;     // valor entre 0 e 255 para endereço LOW
 byte address_h = 210;     // valor entre 0 e 255 para endereço HIGH
 unsigned int alpha = 370; // tempo clock transmição (mudar se houver erro)
+int estadoTomada=0; //indica o atual estado da tomada
+int Tomada=0;
 
 //configuração sensor ultrassonico de distância
 float tempoEcho = 0;  // mede a duracao do tempo do echo
@@ -180,7 +203,9 @@ void checar() {
     for(int i = 0; i<6; i++){ //repetição evitou erro nos teste
         sendRF(6); //função sendRF com o parametro 6 ->configurado com off na tomada
         delay(200);
-      }
+    }
+    digitalWrite(tomada,LOW);
+    Tomada=0;
     digitalWrite(led_red_pin, HIGH);
     digitalWrite(rele_trava, HIGH);
   }
@@ -190,9 +215,12 @@ void checar() {
         sendRF(4); //função sendRF com o parametro 6 ->configurado com on na tomada
         delay(200);
       }
+    digitalWrite(tomada,HIGH);
+    Tomada=1;
     digitalWrite(led_green_pin, HIGH);
     digitalWrite(rele_trava, LOW);
   }
+  if(crianca>0 && adulto==0) Blynk.notify("Crianca sozinha no comodo");
 }
 
 void setup()
@@ -210,12 +238,35 @@ void setup()
   pinMode(infraRed2, INPUT);
   pinMode(infraRed3, INPUT);
   pinMode(rele_trava, OUTPUT);
+  pinMode(tomada, OUTPUT);
+
+  EspSerial.begin(ESP8266_BAUD);
+  
+  delay(10);
+
+  Blynk.begin(auth, wifi, ssid, pass);
+  
+  
   checar();
 }
 
 void loop()
 {
+  Blynk.run();
   if (digitalRead(infraRed1) == LOW) entrando();
   if (digitalRead(infraRed3) == LOW) saindo();
+
+  
+  if (digitalRead(tomada)==LOW) Tomada=0;
+  else Tomada=1;
+
+  if(Tomada == 0 && estadoTomada == 1){//nesse caso, o pino estar diferente do estado indica que o pai utilizou o app para mudar o estado da tomada para desligado
+    sendRF(6);
+    estadoTomada=Tomada;
+  }
+  if(Tomada == 1 && estadoTomada == 0){//nesse caso, o pino estar diferente do estado indica que o pai utilizou o app para mudar o estado da tomada para ligado
+    sendRF(4);
+    estadoTomada=Tomada;
+  }
   delay(10);
 }
