@@ -204,7 +204,7 @@ void checar() {
         sendRF(6); //função sendRF com o parametro 6 ->configurado com off na tomada
         delay(200);
     }
-    digitalWrite(tomada,LOW);
+    digitalWrite( tomada , LOW);
     Tomada=0;
     digitalWrite(led_red_pin, HIGH);
     digitalWrite(rele_trava, HIGH);
@@ -261,11 +261,13 @@ void loop()
   else Tomada=1;
 
   if(Tomada == 0 && estadoTomada == 1){//nesse caso, o pino estar diferente do estado indica que o pai utilizou o app para mudar o estado da tomada para desligado
-    sendRF(6);
+    int i;
+    for(i=0;i<6;i++) sendRF(6);
     estadoTomada=Tomada;
   }
   if(Tomada == 1 && estadoTomada == 0){//nesse caso, o pino estar diferente do estado indica que o pai utilizou o app para mudar o estado da tomada para ligado
-    sendRF(4);
+    int i;
+    for(i=0;i<6;i++) sendRF(4);
     estadoTomada=Tomada;
   }
   delay(10);
