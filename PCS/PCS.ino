@@ -1,3 +1,9 @@
+//para uso do app Blynk
+#define BLYNK_PRINT Serial
+
+#include "ESP8266_Lib.h"
+#include "BlynkSimpleShieldEsp8266.h"
+
 //definição dos pinos do sistema
 const int trigger_pin = 2;    // trigger  sensor ultrassonico
 const int echo_pin = 3;       // echo     sensor ultrassonico
@@ -9,6 +15,20 @@ const int infraRed1 = 12;     // sensor entrada
 const int infraRed2 = 7;      // sensor no alto
 const int infraRed3 = 8;      // sensor saida
 const int rele_trava = 13;    // rele que controla a trava
+
+//conexão com o Blynk e internet
+char auth[] = "uAe3EVH9nAV_-5OLG0FZrtTUo8u6Nae6";
+
+char ssid[] = "sua-rede-wifi-aqui";
+char pass[] = "sua-senha-da-rede-wifi-aqui";
+
+//módulo wi-fi ESP8266
+#include "SoftwareSerial.h"
+SoftwareSerial EspSerial(10,11); // RX, TX
+
+#define ESP8266_BAUD 9600
+
+ESP8266 wifi(&EspSerial);
 
 //configuração tomada radio frequencia
 byte address_l = 200;     // valor entre 0 e 255 para endereço LOW
@@ -183,6 +203,7 @@ void checar() {
       }
     digitalWrite(led_red_pin, HIGH);
     digitalWrite(rele_trava, HIGH);
+    Blynk.notify ("Alerta na cozinha!");
   }
   if (adulto >= 1) {
     //ligar as tomadas
@@ -211,6 +232,10 @@ void setup()
   pinMode(infraRed3, INPUT);
   pinMode(rele_trava, OUTPUT);
   checar();
+  EspSerial.begin(ESP8266_BAUD);
+	delay(10);
+	
+	Blynk.begin(auth, wifi, ssid, pass);
 }
 
 void loop()
@@ -218,4 +243,8 @@ void loop()
   if (digitalRead(infraRed1) == LOW) entrando();
   if (digitalRead(infraRed3) == LOW) saindo();
   delay(10);
+}
+void loop()
+{
+  Blynk.run();
 }
